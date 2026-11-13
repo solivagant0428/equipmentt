@@ -11,6 +11,8 @@
         .toolbar { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 14px; color: #555; }
         .toolbar button { padding: 8px 16px; font-size: 15px; border: none; border-radius: 6px; background: #0d6efd; color: #fff; cursor: pointer; }
         .toolbar button:disabled { background: #9bb8e8; }
+        .back-btn { padding: 8px 16px; font-size: 15px; border: none; border-radius: 6px; background: #6c757d; color: #fff; text-decoration: none; display: inline-block; }
+        .back-btn:hover { background: #5c636a; }
 
         .summary { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; }
         .card { flex: 1; max-width: 180px; padding: 12px; border-radius: 10px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.08); text-align: center; }
@@ -19,7 +21,7 @@
         .card.ok .num { color: #198754; }
         .card.out .num { color: #dc3545; }
 
-        .section { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 12px; margin-bottom: 16px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .section { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 12px; margin-bottom: 16px; max-width: 950px; margin-left: auto; margin-right: auto; }
         .section h3 { margin: 4px 0 10px; font-size: 17px; }
         table { width: 100%; border-collapse: collapse; font-size: 15px; }
         th, td { padding: 8px 6px; border-bottom: 1px solid #eee; text-align: left; }
@@ -48,6 +50,7 @@
 <body>
     <h2>📋 設備狀態總覽</h2>
     <div class="toolbar">
+        <a href="scan.html" class="back-btn">← 返回掃描借還頁</a>
         <span id="updated">載入中...</span>
         <button id="refresh-btn" onclick="loadAll()">🔄 立即更新</button>
         <label><input type="checkbox" id="auto" checked> 每 10 秒自動更新</label>
@@ -79,13 +82,13 @@
     <div class="section">
         <h3>最近借還紀錄</h3>
         <table>
-            <thead><tr><th>時間</th><th>編號</th><th>名稱</th><th>動作</th><th class="hide-sm">更新後狀態</th></tr></thead>
-            <tbody id="log-body"><tr><td colspan="5" class="empty">載入中...</td></tr></tbody>
+            <thead><tr><th>時間</th><th>編號</th><th>名稱</th><th>動作</th><th class="hide-sm">更新後狀態</th><th>操作人員</th></tr></thead>
+            <tbody id="log-body"><tr><td colspan="6" class="empty">載入中...</td></tr></tbody>
         </table>
     </div>
 
     <script>
-        // ★★★ 請替換成您的 GAS 網頁應用程式網址（與 index.html 相同）★★★
+        // ★★★ 請確認此處為您最新的 GAS 網頁應用程式網址 ★★★
         const API_URL = "https://script.google.com/macros/s/AKfycbx4SDTkvKEwUwMriTVy-NNDQ2g5Yy_SoUbtAwSmPlQISgk9Ie1xOj2FTaU0CaXxWvo-/exec";
         const LOG_LIMIT = 50;
 
@@ -93,7 +96,7 @@
         let timer = null;
 
         function esc(s) {
-            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            return String(s || "").replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
         function badge(status) {
@@ -123,13 +126,13 @@
         function renderLog(records) {
             const body = document.getElementById('log-body');
             if (!records.length) {
-                body.innerHTML = '<tr><td colspan="5" class="empty">尚無紀錄</td></tr>';
+                body.innerHTML = '<tr><td colspan="6" class="empty">尚無紀錄</td></tr>';
                 return;
             }
             body.innerHTML = records.map(r => {
                 const cls = r.action === "借用" ? "act-borrow" : "act-return";
                 return `<tr><td>${esc(r.time)}</td><td>${esc(r.id)}</td><td>${esc(r.name)}</td>` +
-                       `<td class="${cls}">${esc(r.action)}</td><td class="hide-sm">${badge(r.status)}</td></tr>`;
+                       `<td class="${cls}">${esc(r.action)}</td><td class="hide-sm">${badge(r.status)}</td><td>${esc(r.operator || "-")}</td></tr>`;
             }).join('');
         }
 
